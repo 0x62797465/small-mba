@@ -159,9 +159,15 @@ uint16_t *mat_mul(uint16_t *mat, uint16_t *vect) {
     return r_vect;
 }
 
+uint16_t* persistent_matrix = 0;
+uint16_t* persistent_rref = 0;
 uint16_t *nullspace_gen_and_sample () {
-    uint16_t* matrix = generate_identity_matrix();
-    uint16_t* rref_matrix = row_echelon_form(matrix);
+    if (persistent_matrix == 0) {
+        persistent_matrix = generate_identity_matrix();
+        persistent_rref = row_echelon_form(persistent_matrix);
+    }
+    uint16_t* rref_matrix = persistent_rref;
+    uint16_t* matrix = persistent_matrix;
     uint8_t cray = 0;
     uint16_t* free_cols = malloc(n*sizeof(uint16_t));
     uint8_t free_tail = 0;
@@ -211,14 +217,11 @@ uint16_t *nullspace_gen_and_sample () {
     for (uint8_t i = 0; i < n; i++) {
         null_vect[i] = (gf_math(sub, target_vect[i], null_vect[i]));
     }
-    putchar('\n');
 
     free(ignore_me_vect);
     free(free_cols);
     free(pivot_cols);
     free(target_vect);
-    free(matrix);
-    free(rref_matrix);
 
     return null_vect;
 }
